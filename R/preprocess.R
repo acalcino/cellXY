@@ -156,13 +156,15 @@ preprocess<- function(x, genome=genome, qc=qc){
 
   cm.new <- cm.new[,!dnc]
 
-  cm.lib.size<- colSums(x[,colnames(cm.new)], na.rm=TRUE)
+  # prior.count and lib.size don't seem to be valid parameters for logNormCounts
+  #cm.lib.size<- colSums(x[,colnames(cm.new)], na.rm=TRUE)
 
   # log-normalisation performed for each cell
   # scaling performed for each gene
-  normsca.cm <- data.frame(lognormCounts(cm.new, log = TRUE,
-                                         prior.count = 0.5,lib.size=cm.lib.size))
-  data.df <- t(normsca.cm)
+  sce <- SingleCellExperiment(assays = list(counts = cm.new))
+  normsca.cm <- logNormCounts(sce, log = TRUE))
+  counts_matrix <- assays(normsca.cm)$counts
+  data.df <- t(counts_matrix)
   data.df <- as.data.frame(data.df)
   row.names(data.df) = row.names(tcm.final)
   return(list(tcm.final=tcm.final, data.df=data.df, discarded.cells=discarded.cells,
